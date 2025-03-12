@@ -9,7 +9,7 @@
 
 using namespace std;    
 
-int m, n, source[MAX], receive[MAX], x[MAX][MAX];
+int m, n, supply[MAX], demand[MAX], x[MAX][MAX];
 float cost[MAX][MAX], totalCost = 0;
 
 void readInputFromCSV() {
@@ -31,11 +31,11 @@ void readInputFromCSV() {
     } file.close();
 
     m = data[0]; n = data[1];
-    for (int i = 0; i < m; i++) source[i] = data[i + 2];
-    for (int i = 0; i < n; i++) receive[i] = data[i + 2 + m];
+    for (int i = 0; i < m; i++) supply[i] = data[i + 2];
+    for (int i = 0; i < n; i++) demand[i] = data[i + 2 + m];
     int k1 = 0, k2 = 0;
-    for (int j = 0; j < m; j++) k1 += source[j];
-    for (int i = 0; i < n; i++) k2 += receive[i];
+    for (int j = 0; j < m; j++) k1 += supply[j];
+    for (int i = 0; i < n; i++) k2 += demand[i];
 
     if (k1 < k2) {cout << "cung < cau, khong can bang"; return;}
     else if (k1 > k2) {cout << "cung > cau, khong can bang"; return;}
@@ -57,7 +57,7 @@ void writeOutputToCSV() {
 
 int main() {
     readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n source[] \n receive[] \n cost[][]
-    northWestMethod(m, source, n, receive, cost, x, &totalCost);   
+    northWestMethod(m, supply, n, demand, cost, x, &totalCost);   
     writeOutputToCSV();
     cout << "Check the result in result.csv! Happy Ending!" << endl;
     return 0;
