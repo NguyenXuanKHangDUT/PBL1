@@ -1,6 +1,6 @@
 #define MAX 10000
 void smallestCostMethod(int m, int a[MAX], int n, int b[MAX], float c[MAX][MAX], int x[MAX][MAX], int total, float *totalCost) {
-    int y[100][100];
+    int y[MAX][MAX];
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {x[i][j] = 0; y[i][j] = c[i][j];}
     }
@@ -18,17 +18,10 @@ void smallestCostMethod(int m, int a[MAX], int n, int b[MAX], float c[MAX][MAX],
         y[i][j] = 1e9;
         int summer = (b[i] - totalrow[i] < a[j] - totalcol[j]) ? b[i] - totalrow[i]: a[j] - totalcol[j];
         x[i][j] = summer;
+        *totalCost += summer * c[i][j];
         totalrow[i] += summer;
         totalcol[j] += summer;
         totalcung -= summer; 
         totalcau -= summer;
-    }
-
-    float t = 0;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            t += x[i][j] * c[i][j];
-        }
-    }
-    *totalCost = t;  
+    } 
 }
