@@ -8,17 +8,10 @@ void northWestMethod(int m, int a[MAX], int n, int b[MAX], float c[MAX][MAX], in
     do {
         int summer = (b[i] - totalrow[i] < a[j] - totalcol[j]) ? b[i] - totalrow[i]: a[j] - totalcol[j];
         x[i][j] = summer;
+        *totalCost += summer * c[i][j];
         totalrow[i] += summer;
         totalcol[j] += summer;
         if (totalrow[i] == b[i]) {i++;}
         if (totalcol[j] == a[j]) {j++;}
     } while (i < n && j < m);
-
-    float t = 0;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            t += x[i][j] * c[i][j];
-        }
-    }
-    *totalCost = t;
 }
