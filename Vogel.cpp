@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <stdlib.h>
 
 #include <fstream>
 #include <sstream>
@@ -37,19 +38,19 @@ void readInputFromCSV() {
     for (int j = 0; j < m; j++) k1 +=supply[j];
     for (int i = 0; i < n; i++) k2 += demand[i];
 
-    if (k1 < k2) {cout << "cung < cau, khong can bang"; return;}
-    else if (k1 > k2) {cout << "cung > cau, khong can bang"; return;}
+    if (k1 < k2) {cout << "cung < cau, khong can bang"; exit(0);}
+    else if (k1 > k2) {cout << "cung > cau, khong can bang"; exit(0);}
 
     int member = 2 + m + n;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {cost[i][j] = data[member++];}
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {cost[i][j] = data[member++];}
     }
 }
 
 void writeOutputToCSV() {
     ofstream file("result.csv");
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {file << x[i][j] << ",";}
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {file << x[i][j] << ",";}
         file << endl;
     } file << "Total cost: " << totalCost << endl; 
     file.close();
@@ -57,7 +58,7 @@ void writeOutputToCSV() {
 
 int main() {
     readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n supply[] \n demand[] \n cost[][]
-    vogelMethod(m, supply, n, demand, cost, x, &totalCost); 
+    vogelMethod(n, demand, m, supply, cost, x, &totalCost); 
     writeOutputToCSV();
     cout << "Check the result in result.csv! Happy Ending!" << endl;
     return 0;
@@ -69,4 +70,3 @@ int main() {
 2,2,4,5,5,
 2,2,2,3,2,
 3,3,2,4,2,*/
-
