@@ -57,7 +57,7 @@ void writeOutputToCSV() {
 }
 
 int main() {
-    readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n source[] \n receive[] \n cost[][]: ma tran m hang n cot
+    readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n supply[] \n demand[] \n cost[][]: ma tran m hang n cot
     northWestMethod(n, demand, m, supply, cost, x, &totalCost);   
     writeOutputToCSV();
     cout << "Check the result in result.csv! Happy Ending!" << endl;
