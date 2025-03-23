@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
-#include <vector>
+#include <vector>  
 
 #include <fstream>
 #include <sstream>
@@ -58,12 +58,13 @@ void writeOutputToCSV() {
 
 int main() {
     readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n supply[] \n demand[] \n cost[][]: ma tran m hang n cot
-    northWestMethod(n, demand, m, supply, cost, x, &totalCost);   
+    northWestMethod(m, supply, n, demand, cost, x, &totalCost);   
     writeOutputToCSV();
     cout << "Check the result in result.csv! Happy Ending!" << endl;
     return 0;
 }
-/*4,4,
+/*cac vi du:
+4,4,
 20,40,70,30
 50,20,40,50
 1,4,5,7
