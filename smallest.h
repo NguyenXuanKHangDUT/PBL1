@@ -1,6 +1,6 @@
 #define MAX 10000
 void smallestCostMethod(int m, int supply[MAX], int n, int demand[MAX], float c[MAX][MAX], int x[MAX][MAX], int total, float *totalCost) {
-    int y[MAX][MAX];
+    int y[100][100];
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {x[i][j] = 0; y[i][j] = c[i][j];}
     }
