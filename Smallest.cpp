@@ -59,16 +59,26 @@ void writeOutputToCSV() {
 
 int main() {
     readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n supply[] \n demand[] \n cost[][]: ma tran m hang n cot
-    smallestCostMethod(n, demand, m, supply, cost, x, k, &totalCost); 
+    smallestCostMethod(m, supply, n, demand, cost, x, k, &totalCost); 
     writeOutputToCSV();
     cout << "Check the result in result.csv! Happy Ending!" << endl;
     return 0;
 }
-/*5,4,
+/*cac vi du:
+4,4,
+20,40,70,30
+50,20,40,50
+1,4,5,7
+9,6,9,3
+4,6,1,5
+1,2,3,5,
+
+5,4,
 10,50,20,80,20,
 30,80,10,60,
 3,2,2,3,
 4,2,2,3,
 6,4,2,2,
 8,5,3,4,
-9,5,2,2,*/
+9,5,2,2,
+*/
