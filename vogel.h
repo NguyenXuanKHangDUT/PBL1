@@ -66,12 +66,12 @@ void vogelMethod(int m, int supply[MAX], int n, int demand[MAX], float c[MAX][MA
         int I = -1, J = -1;
         float maxPenRow = -1e9, maxPenCol = -1e9;
         for (int i = 0; i < m; i++) {
-            if (penRow[i] > maxPenRow || (penRow[i] == maxPenRow && !rowDoneYet[i] && (I == -1 || minInRow[i] < minInRow[I]) )  ) {
+            if (penRow[i] > maxPenRow || (penRow[i] == maxPenRow && !rowDoneYet[i] && ( minInRow[i] < minInRow[I]) )  ) {
                 maxPenRow = penRow[i]; I = i;
             }
         }
         for (int j = 0; j < n; j++) {
-            if (penCol[j] > maxPenCol || (penCol[j] == maxPenCol && !colDoneYet[j] && (J == -1 || minInCol[j] < minInCol[J]) )  ) {
+            if (penCol[j] > maxPenCol || (penCol[j] == maxPenCol && !colDoneYet[j] && ( minInCol[j] < minInCol[J]) )  ) {
                 maxPenCol = penCol[j]; J = j;
             }
         }
