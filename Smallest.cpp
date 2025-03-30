@@ -1,12 +1,10 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <stdlib.h>
 
 #include <fstream>
-#include <sstream>
-
-#include "smallest.h"
-#define MAX 10000
+#define MAX 100 //khong the chay noi voi kich thuoc > 100
 
 using namespace std;    
 
@@ -43,25 +41,58 @@ void readInputFromCSV() {
     else k = k1;
 
     int member = 2 + m + n;
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {cost[i][j] = data[member++];}
+    for (int i = 0; i < m; i++) 
+        for (int j = 0; j < n; j++) 
+            cost[i][j] = data[member++];
+    
+}
+void smallestCostMethod(int m, int supply[MAX], int n, int demand[MAX], float c[MAX][MAX], int x[MAX][MAX], int total, float *totalCost) {
+    int y[MAX][MAX];
+    for (int i = 0; i < m; i++) 
+        for (int j = 0; j < n; j++) {x[i][j] = 0; y[i][j] = c[i][j];}
+    
+
+    int totalcung = total, totalcau = total;
+    int totalrow[100] = {0}, totalcol[100] = {0}; 
+    while (totalcung > 0 && totalcau > 0) {
+        float min = 1e9;
+        int i, j;
+        for (int I = 0; I < m; I++) 
+            for (int J = 0; J < n; J++) 
+                if (c[I][J] < min && y[I][J] != 1e9) {min = y[I][J]; i = I; j = J;}
+        y[i][j] = 1e9;
+        
+        int summer = (supply[i] - totalrow[i] < demand[j] - totalcol[j]) ? supply[i] - totalrow[i]: demand[j] - totalcol[j];
+        x[i][j] = summer;
+        *totalCost += x[i][j] * c[i][j];
+        totalrow[i] += summer;
+        totalcol[j] += summer;
+        totalcung -= summer;
+        totalcau -= summer;
     }
 }
 
-void writeOutputToCSV() {
-    ofstream file("result.csv");
+void Answer(int m, int n, int x[][MAX], float totalcost) {
+    int w = 5; 
+    for (int j = 0; j < n; j++) 
+        cout << "+" << string(w, '-');
+    cout << "+\n";
     for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {file << x[i][j] << ",";}
-        file << endl;
-    } file << "Total cost: " << totalCost << endl; 
-    file.close();
+        for (int j = 0; j < n; j++) 
+            cout << "| " << setw(w - 2) << x[i][j] << " ";
+        cout << "|\n";
+        for (int j = 0; j < n; j++) 
+            cout << "+" << string(w, '-');
+        cout << "+\n";
+    }
+    cout << "Total cost = " <<  totalcost << endl;
 }
 
 int main() {
     readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n supply[] \n demand[] \n cost[][]: ma tran m hang n cot
-    smallestCostMethod(m, supply, n, demand, cost, x, k, &totalCost); 
-    writeOutputToCSV();
-    cout << "Check the result in result.csv! Happy Ending!" << endl;
+    smallestCostMethod(m, supply, n, demand, cost, x, k, &totalCost);
+    cout << "THE RESULT:  \n" << endl;
+    Answer(m, n, x, totalCost);
     return 0;
 }
 /*cac vi du:
