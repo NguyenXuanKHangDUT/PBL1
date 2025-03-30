@@ -20,7 +20,7 @@ void readInputFromCSV() {
         stringstream ss(line); 
         string piece;
 
-        while (getline(ss, piece, ' ')) { 
+        while (getline(ss, piece, ',')) { 
             try {
                 data.push_back(stod(piece));
             }
