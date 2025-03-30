@@ -82,7 +82,7 @@ void Answer(int m, int n, int x[][MAX], float totalcost) {
 int main() {
     readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n supply[] \n demand[] \n cost[][]: ma tran m hang n cot
     northWestMethod(m, supply, n, demand, cost, x, &totalCost);   
-    cout << "THE RESULT:  |_> <_|\n" << endl;
+    cout << "THE RESULT:  |\n" << endl;
     Answer(m, n, x, totalCost);
     return 0;
 }
