@@ -1,11 +1,9 @@
 #include <iostream>
 #include <stdlib.h>
+#include <iomanip>
 #include <vector>  
 
 #include <fstream>
-#include <sstream>
-
-#include "northWest.h"
 #define MAX 10000
 
 using namespace std;    
@@ -42,25 +40,50 @@ void readInputFromCSV() {
     else if (k1 > k2) {cout << "cung > cau, khong can bang"; exit(0);}
 
     int member = 2 + m + n;
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {cost[i][j] = data[member++];}
-    }
+    for (int i = 0; i < m; i++) 
+        for (int j = 0; j < n; j++) 
+            cost[i][j] = data[member++];
+    
+}
+void northWestMethod(int m, int supply[MAX], int n, int demand[MAX], float c[MAX][MAX], int x[MAX][MAX], float *totalCost) {
+    for (int i = 0; i < m; i++) 
+        for (int j = 0; j < n; j++) 
+            x[i][j] = 0;
+    
+    int i = 0, j = 0;
+    int totalrow[100] = {0}, totalcol[100] = {0}; 
+    do {
+        int summer = (supply[i] - totalrow[i] < demand[j] - totalcol[j]) ? supply[i] - totalrow[i]: demand[j] - totalcol[j];
+        x[i][j] = summer;
+        *totalCost += summer * c[i][j];
+        totalrow[i] += summer;
+        totalcol[j] += summer;
+        if (totalrow[i] == supply[i]) {i++;}
+        if (totalcol[j] == demand[j]) {j++;}
+    } while (i < m && j < n);
 }
 
-void writeOutputToCSV() {
-    ofstream file("result.csv");
+void Answer(int m, int n, int x[][MAX], float totalcost) {
+    int w = 5; 
+    for (int j = 0; j < n; j++) 
+        cout << "+" << string(w, '-');
+    cout << "+\n";
     for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {file << x[i][j] << ",";}
-        file << endl;
-    } file << "Total cost: " << totalCost << endl; 
-    file.close();
+        for (int j = 0; j < n; j++) 
+            cout << "| " << setw(w - 2) << x[i][j] << " ";
+        cout << "|\n";
+        for (int j = 0; j < n; j++) 
+            cout << "+" << string(w, '-');
+        cout << "+\n";
+    }
+    cout << "Total cost = " <<  totalcost << endl;
 }
 
 int main() {
     readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n supply[] \n demand[] \n cost[][]: ma tran m hang n cot
     northWestMethod(m, supply, n, demand, cost, x, &totalCost);   
-    writeOutputToCSV();
-    cout << "Check the result in result.csv! Happy Ending!" << endl;
+    cout << "THE RESULT:  |_> <_|\n" << endl;
+    Answer(m, n, x, totalCost);
     return 0;
 }
 /*cac vi du:
