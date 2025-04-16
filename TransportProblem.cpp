@@ -39,17 +39,15 @@ void readInputFromCSV() {
     for (ll j = 0; j < m; j++) k1 += supply[j];
     for (ll i = 0; i < n; i++) k2 += demand[i];
 
-    if (k1 < k2) {cout << "cung < cau, khong can bang"; exit(0);}
-    else if (k1 > k2) {cout << "cung > cau, khong can bang"; exit(0);}
+    if (k1 < k2) {cout << "supply < demand, unbalanced!"; exit(0);}
+    else if (k1 > k2) {cout << "cung > cau, unbalanced!"; exit(0);}
     else k = k1;
 
     ll member = 2 + m + n;
-
     for (ll i = 0; i < m; ++i) {
         vector<float> row;  
-        for (ll j = 0; j < n; ++j) {
+        for (ll j = 0; j < n; ++j) 
             row.push_back(data[member++]);  
-        }
         cost.push_back(row);  
     }
     
@@ -61,7 +59,8 @@ void northWestMethod(ll m, vector<ll>& supply, ll n, vector<ll>& demand, vector<
             x[i][j] = 0;
     
     ll i = 0, j = 0;
-    ll totalrow[100] = {0}, totalcol[100] = {0}; 
+    vector<ll> totalrow(m, 0);
+    vector<ll> totalcol(n, 0); 
     do {
         ll summer = (supply[i] - totalrow[i] < demand[j] - totalcol[j]) ? supply[i] - totalrow[i]: demand[j] - totalcol[j];
         x[i][j] = summer;
@@ -78,10 +77,10 @@ void smallestCostMethod(ll m, vector<ll>& supply, ll n, vector<ll>& demand, vect
     for (ll i = 0; i < m; i++) 
         for (ll j = 0; j < n; j++) {x[i][j] = 0; y[i][j] = c[i][j];}
     
-
-    ll totalcung = total, totalcau = total;
-    ll totalrow[100] = {0}, totalcol[100] = {0}; 
-    while (totalcung > 0 && totalcau > 0) {
+    ll totalSupply = total, totalDemand = total;
+    vector<ll> totalrow(m, 0);
+    vector<ll> totalcol(n, 0); 
+    while (totalSupply > 0 && totalDemand > 0) {
         float min = 1e9;
         ll i, j;
         for (ll I = 0; I < m; I++) 
@@ -94,8 +93,8 @@ void smallestCostMethod(ll m, vector<ll>& supply, ll n, vector<ll>& demand, vect
         *totalCost += x[i][j] * c[i][j];
         totalrow[i] += summer;
         totalcol[j] += summer;
-        totalcung -= summer;
-        totalcau -= summer;
+        totalSupply -= summer;
+        totalDemand -= summer;
     }
 }
 
@@ -103,7 +102,6 @@ float Penalty(ll iORj, ll restSize, vector<vector<float>> c, vector<ll>& done, l
     vector<vector<float>> copy = c; 
     float m1 = 1e9, m2 = 1e9;
     
-
     if (Row) {
         for (ll j = 0; j < restSize; j++) 
             if (!done[j]) 
@@ -221,40 +219,67 @@ void Answer(ll m, ll n, vector<vector<ll>>& x, float totalcost) {
             cout << "+" << string(w, '-');
         cout << "+\n";
     }
-    cout << "Total cost = " <<  totalcost << endl;
+    cout << "Total cost = " <<  totalcost << endl << endl;
 }
 
 int main() {
     readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n supply[] \n demand[] \n cost[][]: ma tran m hang n cot
     x.resize(m, vector<ll>(n, 0));
 
-    cout << "Read all data!\n Choose the method:" << endl;
+    cout << "Read all data!\n Choose the initial basic feasible solution Method:" << endl;
     while (1) {
-        cout << "\n 1. North West method\n 2. Least Cost method\n 3. VAM method \n 4. MODI method\n 5. Stepping Stone method \n 6. Simplex method \n 7. Branch and Bound method \n 0. exit program\n Your choose: ";
-        ll choose; cin >> choose;
-        if (choose == 0) 
+        cout << "\n 1. North West method\n 2. Least Cost method\n 3. VAM method \n 0. exit program\n Your choose: ";
+        char choose; cin >> choose;
+        if (choose == '0') 
             return 0;
-        else if (choose == 1) {
+        else if (choose == '1') {
             northWestMethod(m, supply, n, demand, cost, x, &totalCost);
             cout << "THE RESULT:  \n" << endl;
             Answer(m, n, x, totalCost);
         }
-        else if (choose == 2) {
+        else if (choose == '2') {
             smallestCostMethod(m, supply, n, demand, cost, x, k, &totalCost);
             cout << "THE RESULT:  \n" << endl;
             Answer(m, n, x, totalCost);
         }    
-        else if (choose == 3) {
+        else if (choose == '3') {
             vogelMethod(m, supply, n, demand, cost, x, &totalCost);
             cout << "THE RESULT:  \n" << endl;
             Answer(m, n, x, totalCost);
         }
-        else if (choose >= 4 && choose <= 7) {
-            cout << "COMING SOON!";
+        else {
+            cout << "\nInvalid character, type again" << endl;
+            continue;
         }
-        else 
-            cout << "Invalid character, type again" << endl;
         totalCost = 0;
+
+        cout << "Continue with the initial basic feasible solution methods choose the methods to find the optimal solution:\n";
+        cout << "1. basic feasible solution methods\n2. the methods to find the optimal solution\n0. exit program\n Your choose: ";
+        cin >> choose;
+        if (choose == '0') 
+            return 0;
+        else if (choose == '2') {
+            cout << "Choose the method to find the optimal solution\n";
+            cout << " 1. MODI method\n 2. Stepping Stone method\n 3. Back to the basic feasible solution methods\n 0. exit program\n Your choose: ";
+            while (1) {
+                cin >> choose;
+                if (choose == '0')
+                    return 0;
+                else if (choose == '1') {
+                    cout << "COMING SOON\n Your choose:";
+                }
+                else if (choose == '2') {
+                    cout << "COMING SOON\n Your choose:";
+                }
+                else if (choose == '3') 
+                    break;
+                else {
+                    cout << "\nInvalid character, type again" << endl;
+                    continue;
+                }
+            }
+        }
+
     }
     return 0;
 }
