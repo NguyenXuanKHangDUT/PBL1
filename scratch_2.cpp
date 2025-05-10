@@ -17,17 +17,25 @@ vector<vector<float>> cost;
 void readInputFromCSV() {
     supply.push_back(her);
     demand.push_back(her);
-    ifstream file("input.csv"); //input.csv la ten file, co the thay doi
-    vector<float> data; 
-    data.push_back(her);
 
+    ifstream file("input.csv"); //input.csv is file name, changeably
+    if (!file.is_open()) {
+    cerr << "Error: Cannot open file!";
+    exit(1);
+    }
+    vector<float> data; 
+    data.push_back(her); 
+    //eliminate the first element of this vector so that the first inserted data will be stored at index 1
+    //the purpose is to simplify the way we handle an array or a matrix in code, using indices from 1 to n instead of 0 to n-1
     string line;
 
+    //The idea of reading file is to push all the data from the file into a vector, 
+    //then, based on the determined sequence, many numbers will be separated into variables, arrays, and matrices 
     while (getline(file, line)) { 
         stringstream ss(line); 
         string piece;
 
-        while (getline(ss, piece, ',')) { 
+        while (getline(ss, piece, ',')) {
             try {
                 data.push_back(stod(piece));
             } catch (const invalid_argument& e) {
@@ -52,20 +60,25 @@ void readInputFromCSV() {
     else if (k1 > k2) {cout << "supply > demand, unbalanced!"; exit(0);}
     else total = k1;
 
-    ll member = 2+m+n+1;
+    ll member = 2+m+n + 1;
+
     vector<float> wall;
     for (ll i = 1; i <= n; i++) 
         wall.push_back(her);
     cost.push_back(wall);
-    for (ll i = 1; i <= m; ++i) {
+    //The vector "wall" and these steps are used to eliminate the first row of the cost matrix 
+    //so that the first row will be the row with index 1
+
+    for (ll i = 1; i <= m; i++) {
         vector<float> row; row.push_back(her);
-        for (ll j = 1; j <= n; ++j) 
+        for (ll j = 1; j <= n; j++) 
             row.push_back(data[member++]);  
         cost.push_back(row);
     }
     
 }
 void Answer() {
+    cout << "X =" << endl;
     ll w = 5; 
     for (ll j = 1; j <= n; j++) 
         cout << "+" << string(w, '-');
@@ -78,9 +91,15 @@ void Answer() {
             cout << "+" << string(w, '-');
         cout << "+\n";
     }
-    cout << "Total cost = " <<  totalCost << endl << endl;
 }
-
+// void Answer() {
+//     cout << "X =" << endl;
+//     for (ll i = 1; i <= m; i++) {
+//         for (ll j = 1; j <= n; j++)
+//             cout << x[i][j] << " ";
+//         cout << endl;
+//     }
+// }
 void northWestMethod() {
     x = vector<vector<ll>>(m+1, vector<ll>(n+1, 0));
 
@@ -90,7 +109,7 @@ void northWestMethod() {
     do {
         Answer();
         cout << "Step " << cnt++ <<":\n";
-        ll summer = (supply[i] - totalrow[i] < demand[j] - totalcol[j]) ? supply[i] - totalrow[i]: demand[j] - totalcol[j];
+        ll summer = supply[i]-totalrow[i] < demand[j]-totalcol[j] ? supply[i]-totalrow[i]: demand[j]-totalcol[j];
         x[i][j] = summer;
         totalCost += summer * cost[i][j];
         totalrow[i] += summer;
@@ -101,11 +120,8 @@ void northWestMethod() {
 }
 
 void smallestCostMethod() {
-    vector<vector<ll>> y(m+1, vector<ll>(n+1, 0));
+    vector<vector<float>> y = cost;
     x = vector<vector<ll>>(m+1, vector<ll>(n+1, 0));
-
-    for (ll i = 1; i <= m; i++) 
-        for (ll j = 1; j <= n; j++) y[i][j] = cost[i][j];
     
     ll totalSupply = total, totalDemand = total, cnt = 1;
     vector<ll> totalrow(m+1, 0);
@@ -120,7 +136,7 @@ void smallestCostMethod() {
         
         Answer();
         cout << "Step " << cnt++ <<":\n";
-        ll summer = (supply[i] - totalrow[i] < demand[j] - totalcol[j]) ? supply[i] - totalrow[i]: demand[j] - totalcol[j];
+        ll summer = supply[i]-totalrow[i] < demand[j]-totalcol[j] ? supply[i]-totalrow[i]: demand[j]-totalcol[j];
         x[i][j] = summer;
         totalCost += x[i][j] * cost[i][j];
         totalrow[i] += summer;
@@ -149,7 +165,6 @@ float Penalty(ll iORj, ll restSize, vector<vector<float>> c, vector<ll>& done, l
                 if (copy[iORj][j] < m2)
                     m2 = copy[iORj][j];
     }
-
     else {
         for (ll i = 1; i <= restSize; i++) 
             if (!done[i]) 
@@ -168,7 +183,7 @@ float Penalty(ll iORj, ll restSize, vector<vector<float>> c, vector<ll>& done, l
     return m2 - m1;
 }
 
-//Ham tim penalty cao nhat:
+//this function is to find the row or the column with highest penalty value
 void findCR7(ll m, ll n, vector<float>& penRow, vector<float>& penCol, vector<ll>& rowDone, vector<ll>& colDone, ll &I, ll &J, ll &row) {
     float maxPen = -1;
     I = -1; J = -1;
@@ -179,7 +194,6 @@ void findCR7(ll m, ll n, vector<float>& penRow, vector<float>& penCol, vector<ll
             I = i;
             row = 1;
         }
-
     for (ll j = 1; j <= n; j++) 
         if (!colDone[j] && penCol[j] > maxPen) {
             maxPen = penCol[j];
@@ -187,7 +201,7 @@ void findCR7(ll m, ll n, vector<float>& penRow, vector<float>& penCol, vector<ll
             row = 0;
         }
 }
-//Ham tim phan tu be nhat tren Hang/Cot
+//this function is to find the lowest element in row or column
 void minInRowOrCol(ll m, ll n, vector<vector<float>>& c, vector<ll>& rowDone, vector<ll>& colDone, ll &I, ll &J, ll Row) {
     if (Row) {
         float min = 1e9;
@@ -206,7 +220,7 @@ void minInRowOrCol(ll m, ll n, vector<vector<float>>& c, vector<ll>& rowDone, ve
             }
     }
 }
-
+//this function is the main function of VAM
 void vogelMethod() {
     x = vector<vector<ll>>(m+1, vector<ll>(n+1, 0));
     ll cnt = 1;
@@ -229,7 +243,7 @@ void vogelMethod() {
 
         Answer();
         cout << "Step " << cnt++ <<":\n";
-        ll summer = supply[I] - totalRow[I] < demand[J] - totalCol[J]? supply[I] - totalRow[I] : demand[J] - totalCol[J];
+        ll summer = supply[I]-totalRow[I] < demand[J]-totalCol[J] ? supply[I]-totalRow[I] : demand[J]-totalCol[J];
         x[I][J] = summer;
         totalCost += summer * cost[I][J];
         totalRow[I] += summer;
@@ -243,16 +257,27 @@ void vogelMethod() {
 }
 
 void theCost() {
-    cout << endl;
+    cout << "cost matrix:" << endl;
+    ll w = 5; cout << endl;
+    for (ll j = 1; j <= n; j++) 
+        cout << "+" << string(w, '-');
+    cout << "+\n";
     for (ll i = 1; i <= m; i++) {
         for (ll j = 1; j <= n; j++) 
-            cout << cost[i][j] << "     ";
-        cout << endl;
+            cout << "| " << setw(w - 2) << cost[i][j] << " ";
+        cout << "|\n";
+        for (ll j = 1; j <= n; j++) 
+            cout << "+" << string(w, '-');
+        cout << "+\n";
     }
+    cout << "Total cost = " <<  totalCost << endl << endl;
 }
 
 int main() {
-    readInputFromCSV(); //khi tao file input.csv, nhap du lieu theo thu tu: m, n \n supply[] \n demand[] \n cost[][]: ma tran m hang n cot
+    readInputFromCSV(); 
+    //When creating the input.csv file, type the data based on the following sequence:
+    //m, n \n supply[m], \n demand[n], \n cost[m][n] (a matrix with m rows and n columns).
+
     x.resize(m+1, vector<ll>(n+1, 0));
 
     cout << "Read all data!\n Choose the initial basic feasible solution Method:" << endl;
@@ -263,19 +288,19 @@ int main() {
             return 0;
         else if (choose == '1') {
             northWestMethod();
-            cout << "THE RESULT:  \n" << endl;
+            cout << "THE RESULT:" << endl;
             Answer();
             theCost();
         }
         else if (choose == '2') {
             smallestCostMethod();
-            cout << "THE RESULT:  \n" << endl;
+            cout << "THE RESULT:" << endl;
             Answer();
             theCost();
         }    
         else if (choose == '3') {
             vogelMethod();
-            cout << "THE RESULT:  \n" << endl;
+            cout << "THE RESULT:" << endl;
             Answer();
             theCost();
         }
@@ -284,11 +309,12 @@ int main() {
             continue;
         }
         totalCost = 0;
-        cout << "Continue with the initial basic feasible solution methods choose the methods to find the optimal solution:\n";
+        cout << "Continue with the initial basic feasible solution methods or choose the methods to find the optimal solution?\n";
         cout << "1. basic feasible solution methods\n2. the methods to find the optimal solution\n0. exit program\n Your choose: ";
         cin >> choose;
         if (choose == '0') 
             return 0;
+        else if (choose == '1') continue;
         else if (choose == '2') {
             cout << "Choose the method to find the optimal solution\n";
             cout << " 1. MODI method\n 2. Stepping Stone method\n 3. Back to the basic feasible solution methods\n 0. exit program\n Your choose: ";
@@ -310,24 +336,10 @@ int main() {
                 }
             }
         }
-
+        else {
+            cout << "\nInvalid character, type again" << endl;
+            continue;
+        }
     }
 }
-/*cac vi du:
-4,4,
-20,40,70,30
-50,20,40,50
-1,4,5,7
-9,6,9,3
-4,6,1,5
-1,2,3,5,
-
-5,4,
-10,50,20,80,20,
-30,80,10,60,
-3,2,2,3,
-4,2,2,3,
-6,4,2,2,
-8,5,3,4,
-9,5,2,2,
-*/
+//Author: NGUYEN XUAN KHANG // spring 
