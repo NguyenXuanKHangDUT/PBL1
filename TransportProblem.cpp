@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <vector>
 #include <stdlib.h>
+#include <cmath>
 
 #include <fstream>
 #define ll long long
@@ -35,7 +36,7 @@ void readInputFromCSV() {
         stringstream ss(line); 
         string piece;
 
-        while (getline(ss, piece, ',')) {
+        while (getline(ss, piece, ' ')) {
             try {
                 data.push_back(stod(piece));
             } catch (const invalid_argument& e) {
@@ -129,10 +130,25 @@ void smallestCostMethod() {
 
     while (totalSupply > 0 && totalDemand > 0) {
         float min = 1e9;
-        ll i = -1, j = -1;
+        ll i = -1, j = -1, summer = 0;
         for (ll I = 1; I <= m; I++) 
             for (ll J = 1; J <= n; J++) 
-                if (y[I][J] < min && y[I][J] != 1e9) {min = y[I][J]; i = I; j = J;}
+                if (y[I][J] <= min && y[I][J] != 1e9) {
+
+                    if (y[I][J] < min) {
+                        min = y[I][J];
+                        i = I; j = J;
+                        summer = supply[i]-totalrow[i] < demand[j]-totalcol[j] ? supply[i]-totalrow[i]: demand[j]-totalcol[j];
+                    }
+                    else if (y[I][J] == min) {
+                        ll tmp = supply[I]-totalrow[I] < demand[J]-totalcol[J] ? supply[I]-totalrow[I]: demand[J]-totalcol[J];
+                        if (tmp > summer) {
+                            min = y[I][J]; 
+                            i = I; j = J;
+                            summer = tmp;    
+                        }
+                    }                    
+                }
 
         if (i == -1 || j == -1) break;
         y[i][j] = 1e9;
@@ -140,22 +156,12 @@ void smallestCostMethod() {
         Answer();
         cout << "Step " << cnt++ <<":\n";
 
-        ll summer = supply[i]-totalrow[i] < demand[j]-totalcol[j] ? supply[i]-totalrow[i]: demand[j]-totalcol[j];
         x[i][j] = summer;
         totalCost += x[i][j] * cost[i][j];
         totalrow[i] += summer;
         totalcol[j] += summer;
         totalSupply -= summer;
         totalDemand -= summer;
-
-        // if (supply[i]-totalrow[i] <= demand[j]-totalcol[j]) {
-        //     totalSupply -= summer;
-        //     totalrow[i] = supply[i];  
-        // } 
-        // if (demand[j]-totalcol[j] <= supply[i]-totalrow[i]) {
-        //     totalDemand -= summer;
-        //     totalcol[j] = demand[j];  
-        // }
 
     }
 }
