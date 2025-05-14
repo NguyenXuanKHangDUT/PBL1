@@ -162,7 +162,6 @@ void smallestCostMethod() {
         totalcol[j] += summer;
         totalSupply -= summer;
         totalDemand -= summer;
-
     }
 }
 //this function is to calculate the penalty value of each row and column
@@ -206,28 +205,10 @@ float Penalty(ll Row, ll iORj, ll restSize, vector<vector<float>> c, vector<ll>&
     return m2 - m1;
 }
 
-//this function is to find the row or the column with the highest penalty value, the result is location of the row or columnn, stored in I or J
-void findCR7(ll m, ll n, vector<float>& penRow, vector<float>& penCol, vector<ll>& rowDone, vector<ll>& colDone, ll &I, ll &J, ll &row) {
-    float maxPen = -1;
-    I = -1; J = -1;
-    row = 1;
-    for (ll i = 1; i <= m; i++)
-        if (!rowDone[i] && penRow[i] > maxPen) {
-            maxPen = penRow[i];
-            I = i;
-            row = 1;
-        }
-    for (ll j = 1; j <= n; j++) 
-        if (!colDone[j] && penCol[j] > maxPen) {
-            maxPen = penCol[j];
-            J = j;
-            row = 0;
-        }
-}
 //this function is to find the lowest element in the row or column, the result is location of that element, stored in I and J
-void minInRowOrCol(ll m, ll n, vector<vector<float>>& c, vector<ll>& rowDone, vector<ll>& colDone, ll &I, ll &J, ll Row) {
+float minInRowOrCol(ll m, ll n, vector<vector<float>>& c, vector<ll>& rowDone, vector<ll>& colDone, ll &I, ll &J, ll Row) {
+    float min = 1e9;
     if (Row) {
-        float min = 1e9;
         for (ll j = 1; j <= n; j++)
             if (!colDone[j] && c[I][j] < min) {
                 min = c[I][j];
@@ -235,11 +216,48 @@ void minInRowOrCol(ll m, ll n, vector<vector<float>>& c, vector<ll>& rowDone, ve
             }
     } 
     else {
-        float min = 1e9;
         for (ll i = 1; i <= m; i++) 
             if (!rowDone[i] && c[i][J] < min) {
                 min = c[i][J];
                 I = i;
+            }
+    }
+    return min;
+}
+//this function is to find the row or the column with the highest penalty value, the result is location of the row or columnn, stored in I or J
+void findCR7(ll m, ll n, vector<float>& penRow, vector<float>& penCol, vector<ll>& rowDone, vector<ll>& colDone, ll &I, ll &J, ll &row) {
+    float maxPen = -1, lowestElement = 1e9;
+    I = -1; J = -1;
+    row = 1;
+    ll tmpI, tmpJ;
+    for (ll i = 1; i <= m; i++) {
+        float lE = minInRowOrCol(m, n, cost, rowDone, colDone, i, tmpJ, 1);
+        if (!rowDone[i] && penRow[i] > maxPen) {
+            maxPen = penRow[i];
+            I = i;
+            row = 1;
+            lowestElement = lE;
+        }
+        else if (!rowDone[i] && penRow[i] == maxPen) 
+            if (lE < lowestElement) {
+                I = i;
+                row = 1;
+                lowestElement = lE;
+            }
+    }
+    for (ll j = 1; j <= n; j++) {
+        float lE = minInRowOrCol(m, n, cost, rowDone, colDone, tmpI, j, 0);
+        if (!colDone[j] && penCol[j] > maxPen) {
+            maxPen = penCol[j];
+            J = j;
+            row = 0;
+            lowestElement = lE;
+        }
+        else if (!colDone[j] && penCol[j] == maxPen) 
+            if (lE < lowestElement) {
+                J = j;
+                row = 0;
+                lowestElement = lE;
             }
     }
 }
