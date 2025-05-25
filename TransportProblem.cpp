@@ -7,11 +7,13 @@
 #include <fstream>
 #define ll long long
 #define her 1608
+#define endl cout << endl
 using namespace std;
 
 ll m, n, total;
 vector<ll> supply, demand;
 vector<vector<ll>> x;
+vector<vector<ll>> optimalSolution;
 float totalCost = 0;
 vector<vector<float>> cost;
 
@@ -40,7 +42,7 @@ void readInputFromCSV() {
             try {
                 data.push_back(stod(piece));
             } catch (const invalid_argument& e) {
-                cerr << "error: '" << piece << "' type number only!" << endl;
+                cerr << "error: '" << piece << "' type number only!"; endl;
                 exit(0);
             }
         }
@@ -79,7 +81,7 @@ void readInputFromCSV() {
     
 }
 void Answer() {
-    cout << "X =" << endl;
+    cout << "X ="; endl;
     ll w = 5; 
     for (ll j = 1; j <= n; j++) 
         cout << "+" << string(w, '-');
@@ -120,7 +122,7 @@ void northWestMethod() {
     } while (i <= m && j <= n);
 }
 
-void smallestCostMethod() {
+void leastCostMethod() {
     vector<vector<float>> y = cost;
     x = vector<vector<ll>>(m+1, vector<ll>(n+1, 0));
     
@@ -298,8 +300,8 @@ void vogelMethod() {
 }
 
 void theCost() {
-    cout << "cost matrix:" << endl;
-    ll w = 5; cout << endl;
+    cout << "cost matrix:"; endl;
+    ll w = 5; endl;
     for (ll j = 1; j <= n; j++) 
         cout << "+" << string(w, '-');
     cout << "+\n";
@@ -311,8 +313,176 @@ void theCost() {
             cout << "+" << string(w, '-');
         cout << "+\n";
     }
-    cout << "Total cost = " <<  totalCost << endl << endl;
+    cout << "Total cost = " <<  totalCost; endl; endl;
 }
+
+//U stands for MODI in Row, V in Column
+//Ui + Vj = Cij
+ll before = 1;
+char zigzag() {
+    if (before) {
+        before = 0;
+        return '+';
+    }
+    before = 1; 
+    return '-';
+}
+
+void MODImethod() {
+    ll condition = 0;
+    for (ll i = 1; i <= m; i++) 
+        for (ll j = 1; j <= n; j++) {
+            if (x[i][j] != 0) condition++;
+        }
+    if (condition != m+n-1) {
+        cout << "!(m+n-1) cells, cant be optimized!";
+        return;
+    }
+
+    vector<ll> compare(m+1, 0);
+    for (ll i = 1; i <= m; i++) 
+        for (ll j = 1; j <= n; j++) 
+            if (x[i][j] != 0) 
+                compare[i]++;  
+    ll I = -1, max = -1;
+    for (ll i = 1; i <= m; i++) {
+        if (compare[i] > max) {
+            max = compare[i]; I = i;
+        } 
+    }
+    vector<vector<ll>> op = x;
+    while (1) {
+    vector<ll> U(m+1, her); vector<ll> V(n+1, her);
+    U[I] = 0; 
+    for (ll j = 1; j <= n; j++) {
+        if (op[I][j] != 0) V[j] = cost[I][j] - U[I];
+    }
+    ll updated = 1;
+    while (updated) {
+        updated = 0;
+        for (ll i = 1; i <= m; i++) 
+            for (ll j = 1; j <= n; j++) 
+                if (op[i][j] != 0) {
+                    if (U[i] != her && V[j] == her) {
+                        V[j] = cost[i][j]-U[i];
+                        updated = 1;
+                    }
+                    else if (V[j] != her && U[i] == her) {
+                        U[i] = cost[i][j]-V[j];
+                        updated = 1;
+                    }
+                }
+    }
+    // for (int i = 1; i <= m; i++)
+    //     cout << U[i] << " ";
+    // endl;
+    // for (int j = 1; j <= n; j++)
+    //     cout << V[j] << " ";
+    vector<vector<ll>> delta(m+1, vector<ll>(n+1, her));
+    for (ll i = 1; i <= m; i++) 
+        for (ll j = 1; j <= n; j++) 
+            if (op[i][j] != 0) 
+                delta[i][j] = cost[i][j] - (U[i]+V[j]);
+    
+    ll I = -1, J = -1, negetest = 1e9;
+    for (ll i = 1; i <= m; i++) 
+        for (ll j = 1; j <= n; j++) {
+            if (delta[i][j] != her && delta[i][j] < negetest) {
+                negetest = delta[i][j];
+                I = i; J = j;
+            }
+        }
+    if (negetest >= 0) {
+        cout << "well done!";
+        break;
+    }
+
+    ll im = I, jm = J;
+    vector<vector<char>> sign(m+1, vector<char>(n+1));
+    vector<vector<ll>> visited(m+1, vector<ll>(n+1));
+    vector<ll> pI(m+1, 0);
+    vector<ll> pJ(n+1, 0);
+    ll len = 0;
+    pI[len] = im, pJ[len++] = jm;
+    sign[im][jm] = zigzag();
+    visited[im][jm] = 1;
+
+    ll reach = 0, Row = 1;
+    do {
+        ll i = pI[len-1];
+        ll j = pJ[len-1];
+        ll found = 0;
+
+        if (Row) {
+            for (ll jj = 1; jj <= n; jj++) {
+                if (jj == j) continue;
+                if ((op[i][jj] != 0 || (i == I && jj == J)) && !visited[i][jj]) {
+                    sign[i][jj] = zigzag();
+                    pI[len] = i; pJ[len++] = jj;
+                    visited[i][jj] = 1;
+                    found = 1; Row = 0;
+                    break;
+                }
+                if (i == I && jj == J && len >= 4) {
+                    sign[i][jj] = zigzag();
+                    pI[len] = i, pJ[len++] = jj;
+                    reach = 1, found = 1;
+                    break;
+                }
+            }
+        }
+        else {
+            for (ll ii = 1; ii <= m; ii++) {
+                if (ii == i) continue;
+                if ((op[ii][j] != 0 || (ii == I && j == J)) && !visited[ii][j]) {
+                    sign[ii][j] = zigzag();
+                    pI[len] = ii; pJ[len++] = j;
+                    visited[ii][j] = 1;
+                    found = 1, Row = 1;
+                    break;
+                }
+                if (ii == I && j == J && len >= 4) {
+                    sign[ii][j] = zigzag();
+                    pI[len] = ii; pJ[len++] = j;
+                    reach = 1, found = 1;
+                    break;
+                }
+            }
+        }
+
+    
+    } while (!reach);
+        // Sau khi đã reach = 1, tìm theta (giá trị nhỏ nhất ở ô dấu '-')
+    ll theta = 1e18;
+    for (ll i = 0; i < len; i++) {
+        if (sign[pI[i]][pJ[i]] == '-' && op[pI[i]][pJ[i]] < theta) {
+            theta = op[pI[i]][pJ[i]];
+        }
+    }
+
+    for (ll i = 0; i < len; i++) {
+        ll ii = pI[i], jj = pJ[i];
+        if (sign[ii][jj] == '+') {
+            op[ii][jj] += theta;
+        } else if (sign[ii][jj] == '-') {
+            op[ii][jj] -= theta;
+            if (op[ii][jj] == 0) {
+                op[ii][jj] = 0;
+            }
+        }
+    }
+
+    }
+    float summer = 0;
+    for (int i = 1; i <= m; i++) 
+        for (ll j = 1; j <= n; j++) 
+            summer += op[i][j] * cost[i][j];
+    x = op;
+    Answer(); endl;
+    cout << summer; endl;
+}
+
+
 
 int main() {
     readInputFromCSV(); 
@@ -320,51 +490,59 @@ int main() {
     //m, n \n supply[m], \n demand[n], \n cost[m][n] (a matrix with m rows and n columns).
 
     x.resize(m+1, vector<ll>(n+1, 0));
-
-    cout << "Read all data!\n Choose the initial basic feasible solution Method:" << endl;
+    cout << "               PBL1 REPORT\n";
+    cout << "Input data loaded successfully!\n Select a method to find the Initial Basic Feasible Solution:\n"; endl;
     while (1) {
-        cout << "\n 1. North West method\n 2. Least Cost method\n 3. VAM method \n 0. exit program\n Your choose: ";
+        cout << "\n 1. Northwest Corner Method\n 2. Least Cost method\n 3. Vogel's Approximation Method (VAM)\n 0. Exit \nYour choice: ";
         char choose; cin >> choose;
         if (choose == '0') 
             return 0;
         else if (choose == '1') {
             northWestMethod();
-            cout << "THE RESULT:" << endl;
+            cout << "THE RESULT:"; endl;
             Answer();
             theCost();
         }
         else if (choose == '2') {
-            smallestCostMethod();
-            cout << "THE RESULT:" << endl;
+            leastCostMethod();
+            cout << "THE RESULT:"; endl;
             Answer();
             theCost();
         }    
         else if (choose == '3') {
             vogelMethod();
-            cout << "THE RESULT:" << endl;
+            cout << "THE RESULT:"; endl;
             Answer();
             theCost();
         }
         else {
-            cout << "\nInvalid character, type again" << endl;
+            cout << "\nInvalid character, type again"; endl;
             continue;
         }
         totalCost = 0;
-        cout << "Continue with the initial basic feasible solution methods or choose the methods to find the optimal solution?\n";
-        cout << "1. basic feasible solution methods\n2. the methods to find the optimal solution\n0. exit program\n Your choose: ";
+        cout << "\nWant to continue?\n";
+        cout << " 1. Select another Initial Solution Method\n";
+        cout << " 2. Proceed to Optimal Solution Methods\n";
+        cout << " 0. Exit\n";
+        cout << "Your choice: ";
         cin >> choose;
         if (choose == '0') 
             return 0;
         else if (choose == '1') continue;
         else if (choose == '2') {
-            cout << "Choose the method to find the optimal solution\n";
-            cout << " 1. MODI method\n 2. Stepping Stone method\n 3. Back to the basic feasible solution methods\n 0. exit program\n Your choose: ";
+            cout << "\nSelect a method to find the Optimal Solution:\n";
+            cout << " 1. MODI Method\n";
+            cout << " 2. Stepping Stone Method (Coming Soon)\n";
+            cout << " 3. Back to Initial Solution Menu\n";
+            cout << " 0. Exit Program\n";
+            cout << "Your choice: ";
             while (1) {
                 cin >> choose;
                 if (choose == '0')
                     return 0;
                 else if (choose == '1') {
-                    cout << "In progress\nCOMING SOON\n Your choose:";
+                    MODImethod();
+                    // cout << "In progress\nCOMING SOON\n Your choose:";
                 }
                 else if (choose == '2') {
                     cout << "In progress\nCOMING SOON\n Your choose:";
@@ -372,16 +550,16 @@ int main() {
                 else if (choose == '3') 
                     break;
                 else {
-                    cout << "\nInvalid character, type again" << endl;
+                    cout << "\nInvalid character, type again"; endl;
                     continue;
                 }
             }
         }
         else {
-            cout << "\nInvalid character, type again" << endl;
+            cout << "\nInvalid character, type again"; endl;
             continue;
         }
     }
 }
 //Almost! To be continued!
-//Author: NGUYEN XUAN KHANG // spring 
+//Author: NGUYEN XUAN KHANG // spring Kết quả từ chương trình & đối chiếu với kết quả từ các trang web tính toán (atozmath):
