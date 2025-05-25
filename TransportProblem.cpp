@@ -533,7 +533,8 @@ int main() {
             cout << "\nSelect a method to find the Optimal Solution:\n";
             cout << " 1. MODI Method\n";
             cout << " 2. Stepping Stone Method (Coming Soon)\n";
-            cout << " 3. Back to Initial Solution Menu\n";
+            cout << " 3. Branch and Bound Method (Coming Soon)\n";
+            cout << " 4. Back to Initial Solution Menu\n";
             cout << " 0. Exit Program\n";
             cout << "Your choice: ";
             while (1) {
@@ -548,6 +549,8 @@ int main() {
                     cout << "In progress\nCOMING SOON\n Your choose:";
                 }
                 else if (choose == '3') 
+                    cout << "In progress\nCOMING SOON\n Your choose:";
+                else if (choose == '4') 
                     break;
                 else {
                     cout << "\nInvalid character, type again"; endl;
