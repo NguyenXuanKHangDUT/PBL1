@@ -13,7 +13,7 @@ using namespace std;
 ll m, n, total;
 vector<ll> supply, demand;
 vector<vector<ll>> x;
-vector<vector<ll>> optimalSolution;
+vector<vector<ll>> optimal;
 float totalCost = 0;
 vector<vector<float>> cost;
 
@@ -23,7 +23,7 @@ void readInputFromCSV() {
 
     ifstream file("input.csv"); //input.csv is file name, changeably
     if (!file.is_open()) {
-    cerr << "Error: Cannot open file!";
+    cerr << "Error: Cannot optimalen file!";
     exit(1);
     }
     vector<float> data; 
@@ -38,7 +38,7 @@ void readInputFromCSV() {
         stringstream ss(line); 
         string piece;
 
-        while (getline(ss, piece, ',')) {
+        while (getline(ss, piece, ' ')) {
             try {
                 data.push_back(stod(piece));
             } catch (const invalid_argument& e) {
@@ -335,149 +335,156 @@ void MODImethod() {
             if (x[i][j] != 0) condition++;
         }
     if (condition != m+n-1) {
-        cout << "!(m+n-1) cells, cant be optimized!";
+        cout << "!(m+n-1) cells, cant be optimaltimized!";
         return;
     }
 
-    vector<ll> compare(m+1, 0);
-    for (ll i = 1; i <= m; i++) 
-        for (ll j = 1; j <= n; j++) 
-            if (x[i][j] != 0) 
-                compare[i]++;  
-    ll I = -1, max = -1;
-    for (ll i = 1; i <= m; i++) {
-        if (compare[i] > max) {
-            max = compare[i]; I = i;
-        } 
-    }
-    vector<vector<ll>> op = x;
+    optimal = x;
     while (1) {
-    vector<ll> U(m+1, her); vector<ll> V(n+1, her);
-    U[I] = 0; 
-    for (ll j = 1; j <= n; j++) {
-        if (op[I][j] != 0) V[j] = cost[I][j] - U[I];
-    }
-    ll updated = 1;
-    while (updated) {
-        updated = 0;
+        vector<ll> compare(m+1, 0);
         for (ll i = 1; i <= m; i++) 
             for (ll j = 1; j <= n; j++) 
-                if (op[i][j] != 0) {
-                    if (U[i] != her && V[j] == her) {
-                        V[j] = cost[i][j]-U[i];
-                        updated = 1;
-                    }
-                    else if (V[j] != her && U[i] == her) {
-                        U[i] = cost[i][j]-V[j];
-                        updated = 1;
-                    }
-                }
-    }
-    // for (int i = 1; i <= m; i++)
-    //     cout << U[i] << " ";
-    // endl;
-    // for (int j = 1; j <= n; j++)
-    //     cout << V[j] << " ";
-    vector<vector<ll>> delta(m+1, vector<ll>(n+1, her));
-    for (ll i = 1; i <= m; i++) 
-        for (ll j = 1; j <= n; j++) 
-            if (op[i][j] != 0) 
-                delta[i][j] = cost[i][j] - (U[i]+V[j]);
+                if (optimal[i][j] != 0) 
+                    compare[i]++;  
+        ll I = -1, max = -1;
+        for (ll i = 1; i <= m; i++) {
+            if (compare[i] > max) {
+                max = compare[i]; I = i;
+            } 
+        }
     
-    ll I = -1, J = -1, negetest = 1e9;
-    for (ll i = 1; i <= m; i++) 
+        vector<ll> U(m+1, her); vector<ll> V(n+1, her);
+        U[I] = 0; 
         for (ll j = 1; j <= n; j++) {
-            if (delta[i][j] != her && delta[i][j] < negetest) {
-                negetest = delta[i][j];
-                I = i; J = j;
-            }
+            if (optimal[I][j] != 0) V[j] = cost[I][j] - U[I];
         }
-    if (negetest >= 0) {
-        cout << "well done!";
-        break;
-    }
+        ll updated = 1;
+        while (updated) {
+            updated = 0;
+            for (ll i = 1; i <= m; i++) 
+                for (ll j = 1; j <= n; j++) 
+                    if (optimal[i][j] != 0) {
+                        if (U[i] != her && V[j] == her) {
+                            V[j] = cost[i][j]-U[i];
+                            updated = 1;
+                        }
+                        else if (V[j] != her && U[i] == her) {
+                            U[i] = cost[i][j]-V[j];
+                            updated = 1;
+                        }
+                    }
+        }
+        for (int i = 1; i <= m; i++)
+            cout << U[i] << " ";
+        endl;
+        for (int j = 1; j <= n; j++)
+            cout << V[j] << " ";
+        endl;
 
-    ll im = I, jm = J;
-    vector<vector<char>> sign(m+1, vector<char>(n+1));
-    vector<vector<ll>> visited(m+1, vector<ll>(n+1));
-    vector<ll> pI(m+1, 0);
-    vector<ll> pJ(n+1, 0);
-    ll len = 0;
-    pI[len] = im, pJ[len++] = jm;
-    sign[im][jm] = zigzag();
-    visited[im][jm] = 1;
-
-    ll reach = 0, Row = 1;
-    do {
-        ll i = pI[len-1];
-        ll j = pJ[len-1];
-        ll found = 0;
-
-        if (Row) {
-            for (ll jj = 1; jj <= n; jj++) {
-                if (jj == j) continue;
-                if ((op[i][jj] != 0 || (i == I && jj == J)) && !visited[i][jj]) {
-                    sign[i][jj] = zigzag();
-                    pI[len] = i; pJ[len++] = jj;
-                    visited[i][jj] = 1;
-                    found = 1; Row = 0;
-                    break;
-                }
-                if (i == I && jj == J && len >= 4) {
-                    sign[i][jj] = zigzag();
-                    pI[len] = i, pJ[len++] = jj;
-                    reach = 1, found = 1;
-                    break;
+        vector<vector<ll>> delta(m+1, vector<ll>(n+1, her));
+        for (ll i = 1; i <= m; i++) 
+            for (ll j = 1; j <= n; j++) 
+                if (optimal[i][j] == 0) 
+                    delta[i][j] = cost[i][j] - (U[i]+V[j]);
+        
+        I = -1; ll J = -1, negetest = 0;
+        for (ll i = 1; i <= m; i++) 
+            for (ll j = 1; j <= n; j++) {
+                if (optimal[i][j] == 0 && delta[i][j] < negetest) {
+                    negetest = delta[i][j];
+                    I = i; J = j;
                 }
             }
+        if (negetest >= 0) {
+            cout << negetest << "\nwell done!\n";
+            break;
         }
-        else {
-            for (ll ii = 1; ii <= m; ii++) {
-                if (ii == i) continue;
-                if ((op[ii][j] != 0 || (ii == I && j == J)) && !visited[ii][j]) {
-                    sign[ii][j] = zigzag();
-                    pI[len] = ii; pJ[len++] = j;
-                    visited[ii][j] = 1;
-                    found = 1, Row = 1;
-                    break;
+        // cout << negetest << " " << I << " " << J; endl;
+
+
+        // broken movement
+        ll im = I, jm = J;
+        vector<vector<char>> sign(m+1, vector<char>(n+1));
+        vector<vector<ll>> visited(m+1, vector<ll>(n+1));
+        vector<ll> pI(m+1, 0);
+        vector<ll> pJ(n+1, 0);
+        ll len = 0;
+        pI[len] = im, pJ[len++] = jm;
+        sign[im][jm] = zigzag();
+        visited[im][jm] = 1;
+
+        ll reach = 0, Row = 1;
+        do {
+            ll i = pI[len-1];
+            ll j = pJ[len-1];
+            ll found = 0;
+
+            if (Row) {
+                for (ll jj = 1; jj <= n; jj++) {
+                    if (jj == j) continue;
+                    if ((optimal[i][jj] != 0 || (i == I && jj == J)) && !visited[i][jj]) {
+                        sign[i][jj] = zigzag();
+                        pI[len] = i; pJ[len++] = jj;
+                        visited[i][jj] = 1;
+                        found = 1; Row = 0;
+                        break;
+                    }
+                    if (i == I && jj == J && len >= 4) {
+                        sign[i][jj] = zigzag();
+                        pI[len] = i, pJ[len++] = jj;
+                        reach = 1, found = 1;
+                        break;
+                    }
                 }
-                if (ii == I && j == J && len >= 4) {
-                    sign[ii][j] = zigzag();
-                    pI[len] = ii; pJ[len++] = j;
-                    reach = 1, found = 1;
-                    break;
+            }
+            else {
+                for (ll ii = 1; ii <= m; ii++) {
+                    if (ii == i) continue;
+                    if ((optimal[ii][j] != 0 || (ii == I && j == J)) && !visited[ii][j]) {
+                        sign[ii][j] = zigzag();
+                        pI[len] = ii; pJ[len++] = j;
+                        visited[ii][j] = 1;
+                        found = 1, Row = 1;
+                        break;
+                    }
+                    if (ii == I && j == J && len >= 4) {
+                        sign[ii][j] = zigzag();
+                        pI[len] = ii; pJ[len++] = j;
+                        reach = 1, found = 1;
+                        break;
+                    }
                 }
+            }
+
+        
+        } while (!reach);
+            // broken movement
+            // after reach = 1, find theta (min cell with sign '-')
+        ll theta = 1e18;
+        for (ll i = 0; i < len; i++) {
+            if (sign[pI[i]][pJ[i]] == '-' && optimal[pI[i]][pJ[i]] < theta) {
+                theta = optimal[pI[i]][pJ[i]];
             }
         }
 
-    
-    } while (!reach);
-        // after reached = 1, find theta (min cell with sign '-')
-    ll theta = 1e18;
-    for (ll i = 0; i < len; i++) {
-        if (sign[pI[i]][pJ[i]] == '-' && op[pI[i]][pJ[i]] < theta) {
-            theta = op[pI[i]][pJ[i]];
-        }
-    }
-
-    for (ll i = 0; i < len; i++) {
-        ll ii = pI[i], jj = pJ[i];
-        if (sign[ii][jj] == '+') {
-            op[ii][jj] += theta;
-        } else if (sign[ii][jj] == '-') {
-            op[ii][jj] -= theta;
-            if (op[ii][jj] == 0) {
-                op[ii][jj] = 0;
+        for (ll i = 0; i < len; i++) {
+            ll ii = pI[i], jj = pJ[i];
+            if (sign[ii][jj] == '+') {
+                optimal[ii][jj] += theta;
+            } else if (sign[ii][jj] == '-') {
+                optimal[ii][jj] -= theta;
+                if (optimal[ii][jj] == 0) {
+                    optimal[ii][jj] = 0;
+                }
             }
         }
-    }
 
     }
     float summer = 0;
     for (int i = 1; i <= m; i++) 
         for (ll j = 1; j <= n; j++) 
-            summer += op[i][j] * cost[i][j];
-    x = op;
+            summer += optimal[i][j] * cost[i][j];
+    x = optimal;
     Answer(); endl;
     cout << summer; endl;
 }
@@ -522,7 +529,7 @@ int main() {
         totalCost = 0;
         cout << "\nWant to continue?\n";
         cout << " 1. Select another Initial Solution Method\n";
-        cout << " 2. Proceed to Optimal Solution Methods\n";
+        cout << " 2. Proceed to optimaltimal Solution Methods\n";
         cout << " 0. Exit\n";
         cout << "Your choice: ";
         cin >> choose;
@@ -530,7 +537,7 @@ int main() {
             return 0;
         else if (choose == '1') continue;
         else if (choose == '2') {
-            cout << "\nSelect a method to find the Optimal Solution:\n";
+            cout << "\nSelect a method to find the optimaltimal Solution:\n";
             cout << " 1. MODI Method\n";
             cout << " 2. Stepping Stone Method (Coming Soon)\n";
             cout << " 3. Branch and Bound Method (Coming Soon)\n";
