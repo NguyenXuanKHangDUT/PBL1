@@ -565,4 +565,4 @@ int main() {
     }
 }
 //Almost! To be continued!
-//Author: NGUYEN XUAN KHANG // spring Kết quả từ chương trình & đối chiếu với kết quả từ các trang web tính toán (atozmath):
+//Author: NGUYEN XUAN KHANG // Spring
