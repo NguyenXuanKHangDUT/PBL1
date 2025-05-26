@@ -452,7 +452,7 @@ void MODImethod() {
 
     
     } while (!reach);
-        // Sau khi đã reach = 1, tìm theta (giá trị nhỏ nhất ở ô dấu '-')
+        // after reached = 1, find theta (min cell with sign '-')
     ll theta = 1e18;
     for (ll i = 0; i < len; i++) {
         if (sign[pI[i]][pJ[i]] == '-' && op[pI[i]][pJ[i]] < theta) {
