@@ -3,6 +3,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <cmath>
+#include <functional>
 
 #include <fstream>
 #define ll long long
@@ -38,7 +39,7 @@ void readInputFromCSV() {
         stringstream ss(line); 
         string piece;
 
-        while (getline(ss, piece, ',')) {
+        while (getline(ss, piece, ' ')) {
             try {
                 data.push_back(stod(piece));
             } catch (const invalid_argument& e) {
@@ -316,8 +317,7 @@ void theCost() {
     cout << "Total cost = " <<  totalCost; endl; endl;
 }
 
-//U stands for MODI in Row, V in Column
-//Ui + Vj = Cij
+
 ll before = 1;
 char zigzag() {
     if (before) {
@@ -328,6 +328,14 @@ char zigzag() {
     return '-';
 }
 
+ll movement(ll I, ll J, vector<vector<char>>& sign, vector<vector<ll>>& visited) {
+    // In progress
+    return 1;
+}
+
+
+//U stands for MODI in Row, V in Column
+//Ui + Vj = Cij
 void MODImethod() {
     ll condition = 0;
     for (ll i = 1; i <= m; i++) 
@@ -335,7 +343,7 @@ void MODImethod() {
             if (x[i][j] != 0) condition++;
         }
     if (condition != m+n-1) {
-        cout << "!(m+n-1) cells, cant be optimaltimized!";
+        cout << "!(m+n-1) cells, can't be optimaltimized!";
         return;
     }
 
@@ -352,12 +360,12 @@ void MODImethod() {
                 max = compare[i]; I = i;
             } 
         }
-    
         vector<ll> U(m+1, her); vector<ll> V(n+1, her);
         U[I] = 0; 
-        for (ll j = 1; j <= n; j++) {
-            if (optimal[I][j] != 0) V[j] = cost[I][j] - U[I];
-        }
+        for (ll j = 1; j <= n; j++) 
+            if (optimal[I][j] != 0) 
+                V[j] = cost[I][j] - U[I];
+        
         ll updated = 1;
         while (updated) {
             updated = 0;
@@ -374,12 +382,12 @@ void MODImethod() {
                         }
                     }
         }
-        for (int i = 1; i <= m; i++)
-            cout << U[i] << " ";
-        endl;
-        for (int j = 1; j <= n; j++)
-            cout << V[j] << " ";
-        endl;
+        // for (int i = 1; i <= m; i++)
+        //     cout << U[i] << " ";
+        // endl;
+        // for (int j = 1; j <= n; j++)
+        //     cout << V[j] << " ";
+        // endl;
 
         vector<vector<ll>> delta(m+1, vector<ll>(n+1, her));
         for (ll i = 1; i <= m; i++) 
@@ -403,83 +411,29 @@ void MODImethod() {
 
 
         // broken movement
-        ll im = I, jm = J;
         vector<vector<char>> sign(m+1, vector<char>(n+1));
         vector<vector<ll>> visited(m+1, vector<ll>(n+1));
-        vector<ll> pI(m+1, 0);
-        vector<ll> pJ(n+1, 0);
-        ll len = 0;
-        pI[len] = im, pJ[len++] = jm;
-        sign[im][jm] = zigzag();
-        visited[im][jm] = 1;
-
-        ll reach = 0, Row = 1;
-        do {
-            ll i = pI[len-1];
-            ll j = pJ[len-1];
-            ll found = 0;
-
-            if (Row) {
-                for (ll jj = 1; jj <= n; jj++) {
-                    if (jj == j) continue;
-                    if ((optimal[i][jj] != 0 || (i == I && jj == J)) && !visited[i][jj]) {
-                        sign[i][jj] = zigzag();
-                        pI[len] = i; pJ[len++] = jj;
-                        visited[i][jj] = 1;
-                        found = 1; Row = 0;
-                        break;
-                    }
-                    if (i == I && jj == J && len >= 4) {
-                        sign[i][jj] = zigzag();
-                        pI[len] = i, pJ[len++] = jj;
-                        reach = 1, found = 1;
-                        break;
-                    }
-                }
-            }
-            else {
-                for (ll ii = 1; ii <= m; ii++) {
-                    if (ii == i) continue;
-                    if ((optimal[ii][j] != 0 || (ii == I && j == J)) && !visited[ii][j]) {
-                        sign[ii][j] = zigzag();
-                        pI[len] = ii; pJ[len++] = j;
-                        visited[ii][j] = 1;
-                        found = 1, Row = 1;
-                        break;
-                    }
-                    if (ii == I && j == J && len >= 4) {
-                        sign[ii][j] = zigzag();
-                        pI[len] = ii; pJ[len++] = j;
-                        reach = 1, found = 1;
-                        break;
-                    }
-                }
-            }
-
         
-        } while (!reach);
-            // broken movement
-            // after reach = 1, find theta (min cell with sign '-')
-        ll theta = 1e18;
-        for (ll i = 0; i < len; i++) {
-            if (sign[pI[i]][pJ[i]] == '-' && optimal[pI[i]][pJ[i]] < theta) {
-                theta = optimal[pI[i]][pJ[i]];
-            }
+        ll theta = movement(I, J, sign, visited);
+        if (theta == 0 || theta == 1e9) {
+            cout << "sdhf";
+            break;
         }
+        // broken movement
+        
 
-        for (ll i = 0; i < len; i++) {
-            ll ii = pI[i], jj = pJ[i];
-            if (sign[ii][jj] == '+') {
-                optimal[ii][jj] += theta;
-            } else if (sign[ii][jj] == '-') {
-                optimal[ii][jj] -= theta;
-                if (optimal[ii][jj] == 0) {
-                    optimal[ii][jj] = 0;
-                }
+
+        //allocate
+        for (ll i = 1; i <= m; i++) 
+            for (ll j = 1; j <= n; j++) {
+                if (sign[i][j] == '+') 
+                    optimal[i][j] += theta;
+                else if (sign[i][j] == '-')
+                    optimal[i][j] -= theta;
             }
-        }
-
+        
     }
+
     float summer = 0;
     for (int i = 1; i <= m; i++) 
         for (ll j = 1; j <= n; j++) 
@@ -488,7 +442,6 @@ void MODImethod() {
     Answer(); endl;
     cout << summer; endl;
 }
-
 
 
 int main() {
