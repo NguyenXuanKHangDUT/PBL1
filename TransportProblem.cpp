@@ -1,11 +1,11 @@
 #include <iostream>
 #include <iomanip>
-#include <vector>
 #include <stdlib.h>
-#include <cmath>
-#include <functional>
-
+#include <vector>
+#include <stack>
 #include <fstream>
+#include <algorithm>
+
 #define ll long long
 #define her 1608
 #define endl cout << endl
@@ -14,7 +14,6 @@ using namespace std;
 ll m, n, total;
 vector<ll> supply, demand;
 vector<vector<ll>> x;
-vector<vector<ll>> optimal;
 float totalCost = 0;
 vector<vector<float>> cost;
 
@@ -103,7 +102,7 @@ void Answer() {
 //             cout << x[i][j] << " ";
 //         cout << endl;
 //     }
-// }
+// } //this function is to print the result without table, in case mxn is too big
 void northWestMethod() {
     x = vector<vector<ll>>(m+1, vector<ll>(n+1, 0));
 
@@ -150,15 +149,14 @@ void leastCostMethod() {
                             i = I; j = J;
                             summer = tmp;    
                         }
-                    }                    
-                }
+                    }      
 
+                }
         if (i == -1 || j == -1) break;
         y[i][j] = 1e9;
         
         Answer();
         cout << "Step " << cnt++ <<":\n";
-
         x[i][j] = summer;
         totalCost += x[i][j] * cost[i][j];
         totalrow[i] += summer;
@@ -270,7 +268,7 @@ void vogelMethod() {
     ll cnt = 1;
     vector<ll> rowDone(m+1, 0); vector<ll> colDone(n+1, 0);
     vector<ll> totalRow(m+1, 0); vector<ll> totalCol(n+1, 0);
-
+    
     while (1) {
         vector<float> penRow(m+1, 0); vector<float> penCol(n+1, 0);
 
@@ -314,135 +312,151 @@ void theCost() {
             cout << "+" << string(w, '-');
         cout << "+\n";
     }
-    cout << "Total cost = " <<  totalCost; endl; endl;
+    cout << "Total cost = " <<  totalCost; endl; 
+    totalCost = 0;
 }
 
+vector<vector<ll>> delta;
+vector<ll> u, v;
+//this function is to calculate u and v 
+void calcUV() {
+    u = vector<ll>(m+1, her);
+    v = vector<ll>(n+1, her);
 
-ll before = 1;
-char zigzag() {
-    if (before) {
-        before = 0;
-        return '+';
-    }
-    before = 1; 
-    return '-';
-}
-
-ll movement(ll I, ll J, vector<vector<char>>& sign, vector<vector<ll>>& visited) {
-    // In progress
-    return 1;
-}
-
-
-//U stands for MODI in Row, V in Column
-//Ui + Vj = Cij
-void MODImethod() {
-    ll condition = 0;
+    // The idea is to find the row or column that contains the most non-zero cells in the matrix x.
+    vector<ll> rowCnt(m+1, 0), colCnt(n+1, 0);
+    for (ll i = 1; i <= m; ++i) 
+        for (ll j = 1; j <= n; ++j) 
+            if (x[i][j] != 0) {
+                rowCnt[i]++;
+                colCnt[j]++;
+            }
+    ll maxRow = -1, maxCol = -1, I = -1, J = -1;
     for (ll i = 1; i <= m; i++) 
-        for (ll j = 1; j <= n; j++) {
-            if (x[i][j] != 0) condition++;
+        if (rowCnt[i] > maxRow) {
+            maxRow = rowCnt[i];
+            I = i;
         }
-    if (condition != m+n-1) {
-        cout << "!(m+n-1) cells, can't be optimaltimized!";
-        return;
-    }
-
-    optimal = x;
-    while (1) {
-        vector<ll> compare(m+1, 0);
+    for (ll j = 1; j <= n; j++) 
+        if (colCnt[j] > maxCol) {
+            maxCol = colCnt[j];
+            J = j;
+        }
+    // That row or column will be used as the starting point for calculating the u and v potentials.
+    // If a row is selected, set u[i] = 0. If a column is selected, set v[j] = 0.
+    if (maxRow >= maxCol) 
+        u[I] = 0;
+    else 
+        v[J] = 0;
+    // From there, compute u and v by spreading to other cells
+    ll spreading;
+    do {
+        spreading = 0;
         for (ll i = 1; i <= m; i++) 
             for (ll j = 1; j <= n; j++) 
-                if (optimal[i][j] != 0) 
-                    compare[i]++;  
-        ll I = -1, max = -1;
-        for (ll i = 1; i <= m; i++) {
-            if (compare[i] > max) {
-                max = compare[i]; I = i;
-            } 
-        }
-        vector<ll> U(m+1, her); vector<ll> V(n+1, her);
-        U[I] = 0; 
-        for (ll j = 1; j <= n; j++) 
-            if (optimal[I][j] != 0) 
-                V[j] = cost[I][j] - U[I];
-        
-        ll updated = 1;
-        while (updated) {
-            updated = 0;
-            for (ll i = 1; i <= m; i++) 
-                for (ll j = 1; j <= n; j++) 
-                    if (optimal[i][j] != 0) {
-                        if (U[i] != her && V[j] == her) {
-                            V[j] = cost[i][j]-U[i];
-                            updated = 1;
-                        }
-                        else if (V[j] != her && U[i] == her) {
-                            U[i] = cost[i][j]-V[j];
-                            updated = 1;
-                        }
+                if (x[i][j] != 0) {
+                    if (u[i] != her && v[j] == her) {
+                        v[j] = cost[i][j]-u[i];
+                        spreading = 1;
                     }
-        }
-        // for (int i = 1; i <= m; i++)
-        //     cout << U[i] << " ";
-        // endl;
-        // for (int j = 1; j <= n; j++)
-        //     cout << V[j] << " ";
-        // endl;
-
-        vector<vector<ll>> delta(m+1, vector<ll>(n+1, her));
-        for (ll i = 1; i <= m; i++) 
-            for (ll j = 1; j <= n; j++) 
-                if (optimal[i][j] == 0) 
-                    delta[i][j] = cost[i][j] - (U[i]+V[j]);
-        
-        I = -1; ll J = -1, negetest = 0;
-        for (ll i = 1; i <= m; i++) 
-            for (ll j = 1; j <= n; j++) {
-                if (optimal[i][j] == 0 && delta[i][j] < negetest) {
-                    negetest = delta[i][j];
-                    I = i; J = j;
+                    if (v[j] != her && u[i] == her) {
+                        u[i] = cost[i][j]-v[j];
+                        spreading = 1;
+                    }
                 }
-            }
-        if (negetest >= 0) {
-            cout << negetest << "\nwell done!\n";
-            break;
-        }
-        // cout << negetest << " " << I << " " << J; endl;
-
-
-        // broken movement
-        vector<vector<char>> sign(m+1, vector<char>(n+1));
-        vector<vector<ll>> visited(m+1, vector<ll>(n+1));
-        
-        ll theta = movement(I, J, sign, visited);
-        if (theta == 0 || theta == 1e9) {
-            cout << "sdhf";
-            break;
-        }
-        // broken movement
-        
-
-
-        //allocate
-        for (ll i = 1; i <= m; i++) 
-            for (ll j = 1; j <= n; j++) {
-                if (sign[i][j] == '+') 
-                    optimal[i][j] += theta;
-                else if (sign[i][j] == '-')
-                    optimal[i][j] -= theta;
-            }
-        
-    }
-
-    float summer = 0;
-    for (int i = 1; i <= m; i++) 
-        for (ll j = 1; j <= n; j++) 
-            summer += optimal[i][j] * cost[i][j];
-    x = optimal;
-    Answer(); endl;
-    cout << summer; endl;
+    } while (spreading);
 }
 
+void calcDelta() {// This function calculates delta based on the formula: dij = cij - (ui + vj)
+    delta = vector<vector<ll>>(m+1, vector<ll>(n+1, 0));
+    for (ll i = 1; i <= m; i++) 
+        for (ll j = 1; j <= n; j++) 
+            if (x[i][j] == 0) 
+                delta[i][j] = cost[i][j] - (u[i]+v[j]);
+            else 
+                delta[i][j] = 0; 
+}
+
+ll badSpot(ll &I, ll &J) {// This function finds the most negative delta value
+    ll min = 0, found = 0;
+    for (ll i = 1; i <= m; ++i) 
+        for (ll j = 1; j <= n; ++j) 
+            if (delta[i][j] < min) {
+                min = delta[i][j];
+                I = i; J = j;
+                found = 1;
+            }
+    return found;
+}
+
+bool findCycle(ll Row, ll i, ll j, vector<vector<bool>> &visited, stack<pair<ll,ll>> &mapTrail, pair<ll,ll> start) {
+    if (mapTrail.size() > 3 && start == make_pair(i, j)) return true;
+    if (visited[i][j]) return false;
+
+    visited[i][j] = true;
+    mapTrail.push({i, j});
+
+    if (Row) {
+        for (ll J = 1; J <= n; J++)
+            if (J != j && (x[i][J] != 0 || (i == start.first && J == start.second)))
+                if (findCycle(0, i, J, visited, mapTrail, start))
+                    return true;
+    } 
+    else {
+        for (ll I = 1; I <= m; I++) 
+            if (I != i && (x[I][j] != 0 || (I == start.first && j == start.second)))
+                if (findCycle(1, I, j, visited, mapTrail, start))
+                    return true;
+    }
+    mapTrail.pop();
+    return false;
+}
+void applyTheta(vector<pair<ll,ll>> &turns) {
+    ll theta = 1e9;
+    for (ll k = 1; k < turns.size(); k += 2) {
+        ll i = turns[k].first, j = turns[k].second;
+        if (x[i][j] < theta)
+            theta = x[i][j];
+    }
+    for (ll k = 0; k < turns.size(); k++) {
+        ll i = turns[k].first, j = turns[k].second;
+        if (k % 2 == 0)
+            x[i][j] += theta;
+        else
+            x[i][j] -= theta;
+    }
+}
+void MODImethod() {
+    while (1) {
+        calcUV();
+        calcDelta();
+        ll I, J;
+        if (!badSpot(I, J))
+            break; //all cells were optimized!
+
+        vector<vector<bool>> visited(m+1, vector<bool>(n+1, false)); // this matrix is to note the coordinates which had passed away before
+        stack<pair<ll,ll>> mapTrail;
+        pair<ll,ll> start = {I, J};
+
+        if (findCycle(1, I, J, visited, mapTrail, start)) {
+            vector<pair<ll,ll>> turns;
+            while (!mapTrail.empty()) {
+                turns.push_back(mapTrail.top());
+                mapTrail.pop();
+            }
+            reverse(turns.begin(), turns.end());
+            applyTheta(turns);
+        }
+        else {
+            cout << "Can't find circle!\n";
+            break; 
+        }
+    }
+    totalCost = 0;
+    for (ll i = 1; i <= m; i++)
+        for (ll j = 1; j <= n; j++)
+            totalCost += x[i][j]*cost[i][j];
+}
 
 int main() {
     readInputFromCSV(); 
@@ -451,32 +465,32 @@ int main() {
 
     x.resize(m+1, vector<ll>(n+1, 0));
     cout << "               PBL1 REPORT\n";
-    cout << "Input data loaded successfully!\n Select a method to find the Initial Basic Feasible Solution:\n"; endl;
+    cout << "Input data loaded successfully!\n Select a method to find the Initial Basic Feasible Solution:\n";
     while (1) {
-        cout << "\n 1. Northwest Corner Method\n 2. Least Cost method\n 3. Vogel's Approximation Method (VAM)\n 0. Exit \nYour choice: ";
+        cout << "\n 1. Northwest Corner Method\n 2. Least Cost Method\n 3. Vogel's Approximation Method (VAM)\n 0. Exit \nYour choice: ";
         char choose; cin >> choose;
         if (choose == '0') 
             return 0;
         else if (choose == '1') {
             northWestMethod();
-            cout << "THE RESULT:"; endl;
+            cout << "THE RESULT:\n"; 
             Answer();
             theCost();
         }
         else if (choose == '2') {
             leastCostMethod();
-            cout << "THE RESULT:"; endl;
+            cout << "THE RESULT:\n";
             Answer();
             theCost();
         }    
         else if (choose == '3') {
             vogelMethod();
-            cout << "THE RESULT:"; endl;
+            cout << "THE RESULT:\n";
             Answer();
             theCost();
         }
         else {
-            cout << "\nInvalid character, type again"; endl;
+            cout << "\nInvalid character, type again\n";
             continue;
         }
         totalCost = 0;
@@ -492,9 +506,7 @@ int main() {
         else if (choose == '2') {
             cout << "\nSelect a method to find the optimaltimal Solution:\n";
             cout << " 1. MODI Method\n";
-            cout << " 2. Stepping Stone Method (Coming Soon)\n";
-            cout << " 3. Branch and Bound Method (Coming Soon)\n";
-            cout << " 4. Back to Initial Solution Menu\n";
+            cout << " 2. Back to Initial Solution Menu\n";
             cout << " 0. Exit Program\n";
             cout << "Your choice: ";
             while (1) {
@@ -503,26 +515,31 @@ int main() {
                     return 0;
                 else if (choose == '1') {
                     MODImethod();
-                    // cout << "In progress\nCOMING SOON\n Your choose:";
+                    cout << "THE RESULT: after optimized with MODI Method:\n";
+                    Answer();
+                    theCost();
                 }
-                else if (choose == '2') {
-                    cout << "In progress\nCOMING SOON\n Your choose:";
-                }
-                else if (choose == '3') 
-                    cout << "In progress\nCOMING SOON\n Your choose:";
-                else if (choose == '4') 
+                else if (choose == '2') 
                     break;
                 else {
-                    cout << "\nInvalid character, type again"; endl;
+                    cout << "\nInvalid character, type again\n";
                     continue;
                 }
+                cout << "\nSelect a method to find the optimaltimal Solution:\n";
+                cout << " 1. MODI Method\n";
+                cout << " 2. Back to Initial Solution Menu\n";
+                cout << " 0. Exit Program\n";
+                cout << "Your choice: ";
             }
         }
         else {
-            cout << "\nInvalid character, type again"; endl;
+            cout << "\nInvalid character, type again\n";
             continue;
         }
     }
 }
-//Almost! To be continued!
-//Author: NGUYEN XUAN KHANG // Spring
+/*
+Author/Director: NGUYEN XUAN KHANG
+Right-hand person: Trinh Nhan Tam
+Left-hand person: Pham Van Minh
+*/
