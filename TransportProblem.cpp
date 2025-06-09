@@ -442,7 +442,7 @@ void MODImethod() {
         if (findCycle(1, I, J, visited, mapTrail, start)) {
             vector<pair<ll,ll>> turns;
             while (!mapTrail.empty()) {
-            // We transfer data from stack mapTrail to vector turns to perform the update of adding/subtracting theta values.
+            // Transfering data from stack 'mapTrail' to vector 'turns' to perform the update of adding/subtracting theta values.
                 turns.push_back(mapTrail.top());
                 mapTrail.pop();
             }
